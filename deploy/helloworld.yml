@@ -10,6 +10,15 @@ metadata:
     flux.weave.works/automated: "true"
     flux.weave.works/tag.helloworld: semver:~1.0
 spec:
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20
+      - pause:
+          duration: "30s"
+      - setWeight: 50
+      - pause:
+          duration: "30s"
   replicas: 1
   revisionHistoryLimit: 2
   selector:
