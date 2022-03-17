@@ -1,24 +1,27 @@
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   namespace: demo-concourse-flux
   name: helloworld
   labels:
     app: helloworld
-  annotations:
-    flux.weave.works/automated: "true"
-    flux.weave.works/tag.helloworld: semver:~1.0
 spec:
   strategy:
-    canary:
-      steps:
-      - setWeight: 20
-      - pause:
-          duration: "30s"
-      - setWeight: 50
-      - pause:
-          duration: "30s"
+      canary:
+        analysis:
+          templates:
+          - templateName: webcheck
+        args:
+        - name host
+          value: colorapi
+        steps:
+        - setWeight: 20
+        - pause:
+            duration: "30s"
+        - setWeight: 50
+        - pause:
+            duration: "30s"  
   replicas: 1
   revisionHistoryLimit: 2
   selector:
@@ -49,24 +52,6 @@ spec:
   selector:
     app: helloworld
   type: ClusterIP
----
-apiVersion: networking.k8s.io/v1beta1
-kind: Ingress
-metadata:
-  namespace: demo-concourse-flux
-  name: helloworld
-  annotations:
-    kubernetes.io/ingress.class: traefik
-spec:
-  rules:
-  - host: demo-concourse-flux.particule.io
-    http:
-      paths:
-      - backend:
-          serviceName: helloworld-svc
-          servicePort: 80
-
-
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
